@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora LRV/URV — Transmisores de Nivel DP</title>
+    <meta name="description" content="Calculadora completa de LRV y URV para transmisores de nivel por presión diferencial. Tanque abierto, cerrado, interfaz, densidad y sello remoto.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-logo">🔒</div>
+            <h2 class="login-title">Acceso Restringido</h2>
+            <p class="login-subtitle">Ingrese sus credenciales para continuar</p>
+            <div class="login-form">
+                <div class="login-field">
+                    <label for="loginUser">Usuario</label>
+                    <input type="text" id="loginUser" placeholder="Usuario" autocomplete="off">
+                </div>
+                <div class="login-field">
+                    <label for="loginPass">Contraseña</label>
+                    <input type="password" id="loginPass" placeholder="Contraseña">
+                </div>
+                <p class="login-error" id="loginError"></p>
+                <button class="login-btn" id="loginBtn">Ingresar</button>
+            </div>
+            <p class="login-footer">Universidad Continental — Instrumentación y Control</p>
+        </div>
+    </div>
+
+    <div class="bg-particles"></div>
+
+    <div class="university-banner">
+        <div class="uni-content">
+            <p class="uni-name">🎓 Universidad Continental</p>
+            <p class="uni-student">Estudiante: <strong>Joel Coaguila Cosi</strong></p>
+            <p class="uni-course">Instrumentación y Control</p>
+            <button class="logout-btn" id="logoutBtn" title="Cerrar Sesión">🚪 Salir</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <svg viewBox="0 0 48 48" width="48" height="48">
+                    <defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#00d4ff"/><stop offset="100%" style="stop-color:#7c3aed"/>
+                    </linearGradient></defs>
+                    <rect x="4" y="4" width="40" height="40" rx="8" fill="none" stroke="url(#logoGrad)" stroke-width="2.5"/>
+                    <text x="24" y="30" text-anchor="middle" fill="url(#logoGrad)" font-size="18" font-weight="700" font-family="Inter">DP</text>
+                </svg>
+            </div>
+            <div>
+                <h1>Calculadora LRV / URV</h1>
+                <p class="subtitle">Transmisores de Nivel por Presión Diferencial — Herramienta Completa</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- TAB NAVIGATION -->
+        <nav class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="openTank">🔓 Tanque Abierto</button>
+            <button class="tab-btn" data-tab="closedDry">🔒 Cerrado (Pata Seca)</button>
+            <button class="tab-btn" data-tab="closedWet">💧 Cerrado (Pata Húmeda)</button>
+            <button class="tab-btn" data-tab="remoteSeal">🔴 Sello Remoto</button>
+            <button class="tab-btn" data-tab="constLevel">📏 Densidad (Nivel Cte.)</button>
+            <button class="tab-btn" data-tab="varyLevel">📐 Densidad (Nivel Var.)</button>
+            <button class="tab-btn" data-tab="interface1">🔀 Interfaz (Tanque Abierto)</button>
+            <button class="tab-btn" data-tab="interface2">🔀 Interfaz (Tanque Cerrado)</button>
+        </nav>
+
+        <div class="main-grid">
+            <!-- ===================== INPUT PANELS ===================== -->
+
+            <!-- 1. OPEN TANK -->
+            <section class="card input-panel tab-content active" id="panel-openTank">
+                <div class="card-header"><span class="card-icon">🔓</span><h2>Tanque Abierto</h2></div>
+                <p class="panel-desc">Medición de nivel en tanque abierto (venteo atmosférico)</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Nivel Máximo (X)</label>
+                        <input type="number" id="ot_X" value="800" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="ot_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Nivel Mínimo (Y)</label>
+                    <input type="number" id="ot_Y" value="200" min="0" step="any"></div>
+                <div class="form-group"><label>Gravedad Específica del Líquido (GL)</label>
+                    <input type="number" id="ot_GL" value="0.8" min="0.01" step="0.01">
+                    <span class="hint">Agua=1.0 | Aceite≈0.85 | Gasolina≈0.74</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="ot_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcOpenTank()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 2. CLOSED TANK DRY LEG -->
+            <section class="card input-panel tab-content" id="panel-closedDry">
+                <div class="card-header"><span class="card-icon">🔒</span><h2>Tanque Cerrado — Pata Seca</h2></div>
+                <p class="panel-desc">Tanque cerrado con línea de impulso seca en el lado LP</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Nivel Máximo (X)</label>
+                        <input type="number" id="cd_X" value="5000" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="cd_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Nivel Mínimo (Y)</label>
+                    <input type="number" id="cd_Y" value="250" min="0" step="any"></div>
+                <div class="form-group"><label>Gravedad Específica del Líquido (GL)</label>
+                    <input type="number" id="cd_GL" value="1.05" min="0.01" step="0.01"></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="cd_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcClosedDry()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 3. CLOSED TANK WET LEG -->
+            <section class="card input-panel tab-content" id="panel-closedWet">
+                <div class="card-header"><span class="card-icon">💧</span><h2>Tanque Cerrado — Pata Húmeda</h2></div>
+                <p class="panel-desc">Tanque cerrado con línea de referencia llena de fluido de sello</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Nivel Máximo (X)</label>
+                        <input type="number" id="cw_X" value="5000" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="cw_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Nivel Mínimo (Y)</label>
+                    <input type="number" id="cw_Y" value="250" min="0" step="any"></div>
+                <div class="form-group"><label>Gravedad Específica del Líquido (GL)</label>
+                    <input type="number" id="cw_GL" value="1.05" min="0.01" step="0.01"></div>
+                <div class="form-group"><label>Altura Pata Húmeda (D)</label>
+                    <input type="number" id="cw_D" value="5500" min="0" step="any">
+                    <span class="hint">Distancia total de la pata húmeda desde la toma LP hasta el transmisor</span></div>
+                <div class="form-group"><label>Gravedad Específica del Fluido de Sello (GS)</label>
+                    <input type="number" id="cw_GS" value="0.8" min="0.01" step="0.01">
+                    <span class="hint">Glicol≈1.12 | Aceite Silicona≈0.96 | Glicerina DC200≈0.96</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="cw_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcClosedWet()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 4. REMOTE SEAL -->
+            <section class="card input-panel tab-content" id="panel-remoteSeal">
+                <div class="card-header"><span class="card-icon">🔴</span><h2>Sello Remoto (HP + LP)</h2></div>
+                <p class="panel-desc">Ambas tomas con sello remoto y capilar. Fluido de llenado: Glicerina / DC200</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Nivel Máximo (X)</label>
+                        <input type="number" id="rs_X" value="5000" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="rs_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Nivel Mínimo (Y)</label>
+                    <input type="number" id="rs_Y" value="250" min="0" step="any"></div>
+                <div class="form-group"><label>Gravedad Específica del Líquido (GL)</label>
+                    <input type="number" id="rs_GL" value="1.05" min="0.01" step="0.01"></div>
+                <div class="form-group"><label>Distancia Sello HP a Sello LP (D)</label>
+                    <input type="number" id="rs_D" value="5500" min="0" step="any">
+                    <span class="hint">Distancia vertical entre los diafragmas de sello HP y LP</span></div>
+
+                <div class="separator"><span>Fluido de Llenado del Capilar</span></div>
+
+                <div class="form-group"><label>Tipo de Fluido de Llenado</label>
+                    <select id="rs_fillType">
+                        <option value="dc200">Aceite Silicona DC200</option>
+                        <option value="glycerin">Glicerina</option>
+                        <option value="custom">Personalizado</option>
+                    </select></div>
+                <div class="form-group"><label>Longitud Capilar HP (m)</label>
+                    <input type="number" id="rs_capHP" value="5" min="0" step="0.1">
+                </div>
+                <div class="form-group"><label>Longitud Capilar LP (m)</label>
+                    <input type="number" id="rs_capLP" value="5" min="0" step="0.1">
+                </div>
+                <div class="form-group"><label>Desnivel Capilar HP (mm) — Positivo=Abajo</label>
+                    <input type="number" id="rs_hCapHP" value="0" step="any">
+                    <span class="hint">Diferencia de altura entre sello HP y transmisor</span></div>
+                <div class="form-group"><label>Desnivel Capilar LP (mm) — Positivo=Abajo</label>
+                    <input type="number" id="rs_hCapLP" value="0" step="any">
+                    <span class="hint">Diferencia de altura entre sello LP y transmisor</span></div>
+
+                <div class="separator"><span>Efecto de Temperatura</span></div>
+                <div class="form-group"><label>Temperatura Mín. de Proceso (°C)</label>
+                    <input type="number" id="rs_Tmin" value="20" step="1"></div>
+                <div class="form-group"><label>Temperatura Máx. de Proceso (°C)</label>
+                    <input type="number" id="rs_Tmax" value="80" step="1"></div>
+                <div class="form-group"><label>Temperatura de Calibración (°C)</label>
+                    <input type="number" id="rs_Tcal" value="25" step="1"></div>
+
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="rs_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcRemoteSeal()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 5. CONSTANT LEVEL (DENSITY) -->
+            <section class="card input-panel tab-content" id="panel-constLevel">
+                <div class="card-header"><span class="card-icon">📏</span><h2>Densidad — Nivel Constante</h2></div>
+                <p class="panel-desc">Medición de densidad en tanque abierto con nivel constante (rebosadero)</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Distancia entre Tomas (X)</label>
+                        <input type="number" id="cl_X" value="5000" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="cl_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Densidad Mínima (GMIN)</label>
+                    <input type="number" id="cl_GMIN" value="0.8" min="0.01" step="0.01">
+                    <span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Densidad Máxima (GMAX)</label>
+                    <input type="number" id="cl_GMAX" value="1.08" min="0.01" step="0.01">
+                    <span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="cl_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcConstLevel()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 6. VARYING LEVEL (DENSITY) -->
+            <section class="card input-panel tab-content" id="panel-varyLevel">
+                <div class="card-header"><span class="card-icon">📐</span><h2>Densidad — Nivel Variable</h2></div>
+                <p class="panel-desc">Medición de densidad en tanque abierto con nivel variable</p>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Distancia entre Tomas (X)</label>
+                        <input type="number" id="vl_X" value="2000" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="vl_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option><option value="ft">ft</option></select></div>
+                </div>
+                <div class="form-group"><label>Gravedad Esp. Fluido Sello (GS)</label>
+                    <input type="number" id="vl_GS" value="1.0" min="0.01" step="0.01"></div>
+                <div class="form-group"><label>Densidad Mínima (GMIN)</label>
+                    <input type="number" id="vl_GMIN" value="0.8" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Densidad Máxima (GMAX)</label>
+                    <input type="number" id="vl_GMAX" value="1.08" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="vl_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcVaryLevel()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 7. INTERFACE LEVEL 1 - OPEN TANK -->
+            <section class="card input-panel tab-content" id="panel-interface1">
+                <div class="card-header"><span class="card-icon">🔀</span><h2>Interfaz — Tanque Abierto</h2></div>
+                <p class="panel-desc">Medición de interfaz líquido-líquido en tanque abierto con rebosadero</p>
+                <div class="form-group"><label>Distancia Rebosadero a Interfaz Máx. (A)</label>
+                    <input type="number" id="if1_A" value="30" min="0" step="any"><span class="hint">mm</span></div>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Span de Interfaz (X)</label>
+                        <input type="number" id="if1_X" value="500" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="if1_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option></select></div>
+                </div>
+                <div class="form-group"><label>Distancia bajo Interfaz Mín. (Y)</label>
+                    <input type="number" id="if1_Y" value="50" min="0" step="any"></div>
+                <div class="form-group"><label>Densidad Líquido Ligero (GMIN)</label>
+                    <input type="number" id="if1_GMIN" value="1.0" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Densidad Líquido Pesado (GMAX)</label>
+                    <input type="number" id="if1_GMAX" value="1.2" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="if1_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcInterface1()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- 8. INTERFACE LEVEL 2 - CLOSED TANK -->
+            <section class="card input-panel tab-content" id="panel-interface2">
+                <div class="card-header"><span class="card-icon">🔀</span><h2>Interfaz — Tanque Cerrado</h2></div>
+                <p class="panel-desc">Medición de interfaz líquido-líquido en tanque cerrado con pata húmeda</p>
+                <div class="form-group"><label>Gravedad Esp. Fluido de Sello (GS)</label>
+                    <input type="number" id="if2_GS" value="0.8" min="0.01" step="0.01"></div>
+                <div class="form-group"><label>Distancia Nivel Mín. a Interfaz Máx. (A)</label>
+                    <input type="number" id="if2_A" value="30" min="0" step="any"><span class="hint">mm</span></div>
+                <div class="form-row">
+                    <div class="form-group flex-grow"><label>Span de Interfaz (X)</label>
+                        <input type="number" id="if2_X" value="500" min="0" step="any"></div>
+                    <div class="form-group unit-select"><label>Unidad</label>
+                        <select id="if2_unit"><option value="mm" selected>mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option></select></div>
+                </div>
+                <div class="form-group"><label>Distancia bajo Interfaz Mín. (Y)</label>
+                    <input type="number" id="if2_Y" value="50" min="0" step="any"></div>
+                <div class="form-group"><label>Densidad Líquido Ligero (GMIN)</label>
+                    <input type="number" id="if2_GMIN" value="0.95" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Densidad Líquido Pesado (GMAX)</label>
+                    <input type="number" id="if2_GMAX" value="1.08" min="0.01" step="0.01"><span class="hint">g/cm³</span></div>
+                <div class="form-group"><label>Unidad de Presión (Salida)</label>
+                    <select id="if2_punit"><option value="mmH2O" selected>mmH₂O</option><option value="cmH2O">cmH₂O</option><option value="inH2O">inH₂O</option><option value="kPa">kPa</option><option value="psi">psi</option><option value="mbar">mbar</option><option value="Pa">Pa</option></select></div>
+                <button class="calc-btn" onclick="calcInterface2()"><span class="btn-text">Calcular</span><span class="btn-icon">⚡</span></button>
+            </section>
+
+            <!-- DIAGRAM PANEL -->
+            <section class="card diagram-panel">
+                <div class="card-header"><span class="card-icon">📐</span><h2>Diagrama del Sistema</h2></div>
+                <div class="diagram-container"><svg id="tankDiagram" viewBox="0 0 520 520" preserveAspectRatio="xMidYMid meet"></svg></div>
+            </section>
+        </div>
+
+        <!-- RESULTS SECTION -->
+        <section class="results-section" id="resultsSection">
+            <div class="card-header center"><span class="card-icon">📊</span><h2>Resultados de Calibración</h2></div>
+            <div class="results-grid">
+                <div class="result-card lrv-card">
+                    <div class="result-label">LRV (0%)</div>
+                    <div class="result-value" id="lrvValue">—</div>
+                    <div class="result-unit" id="lrvUnit"></div>
+                </div>
+                <div class="result-card urv-card">
+                    <div class="result-label">URV (100%)</div>
+                    <div class="result-value" id="urvValue">—</div>
+                    <div class="result-unit" id="urvUnit"></div>
+                </div>
+                <div class="result-card span-card">
+                    <div class="result-label">SPAN</div>
+                    <div class="result-value" id="spanValue">—</div>
+                    <div class="result-unit" id="spanUnit"></div>
+                </div>
+                <div class="result-card zero-card">
+                    <div class="result-label">Ajuste de Cero</div>
+                    <div class="result-value" id="zeroValue">—</div>
+                    <div class="result-desc" id="zeroDesc"></div>
+                </div>
+            </div>
+
+            <!-- Remote Seal Temperature Info -->
+            <div class="card temp-card" id="tempCard" style="display:none;">
+                <div class="card-header"><span class="card-icon">🌡️</span><h2>Efecto de Temperatura en Sellos Remotos</h2></div>
+                <div class="temp-grid">
+                    <div class="temp-item"><span class="temp-label">SG Fluido a T° Calibración</span><span class="temp-val" id="sg_cal">—</span></div>
+                    <div class="temp-item"><span class="temp-label">SG Fluido a T° Mínima</span><span class="temp-val" id="sg_min">—</span></div>
+                    <div class="temp-item"><span class="temp-label">SG Fluido a T° Máxima</span><span class="temp-val" id="sg_max">—</span></div>
+                    <div class="temp-item"><span class="temp-label">Error por Temperatura (Máx.)</span><span class="temp-val temp-warn" id="temp_error">—</span></div>
+                </div>
+                <p class="temp-note" id="tempNote"></p>
+            </div>
+
+            <div class="card cal-table-card">
+                <div class="card-header"><span class="card-icon">📋</span><h2>Tabla de Calibración</h2></div>
+                <div class="table-wrapper">
+                    <table><thead><tr>
+                        <th>Nivel (%)</th><th>Altura</th><th>DP</th><th>Corriente (mA)</th>
+                    </tr></thead><tbody id="calTableBody"></tbody></table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer><p>Calculadora de Transmisores DP — Herramienta Completa de Instrumentación © 2026</p></footer>
+    <script src="utils.js"></script>
+    <script src="app.js"></script>
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}</script>
+</body>
+</html>
