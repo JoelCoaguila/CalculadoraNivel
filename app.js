@@ -192,22 +192,10 @@ function calcInterface1(){
     let u=document.getElementById('if1_unit').value;
     let pu=document.getElementById('if1_punit').value;
     let Amm=toMM(A,u),Xmm=toMM(X,u),Ymm=toMM(Y,u);
-    // HW_MIN = (A+X)*GMAX + Y*GMIN - (A+X+Y)*GMIN... 
-    // From Excel: V13 = (A+X)*GMIN + Y*GMIN (all light fluid)
-    // V16 = (A+X)*GMAX + Y*GMIN - ... 
-    // Simplified: interface measurement
-    // LRV: all heavy fluid below HP, light above = Y*GMAX + X*GMIN + A*GMIN
-    // Actually from the Excel formula structure:
-    // HW_MIN (interface at bottom) = (A+X)*GMIN + Y*GMIN = (A+X+Y)*GMIN
-    // HW_MAX (interface at top) = A*GMAX + X*GMAX + Y*GMIN 
-    // Wait, let me use the correct formula from the Excel:
-    // LRV = (A+X)*GMIN + Y*GMIN  (all light fluid)
-    // URV = (A)*GMIN + X*GMAX + Y*GMAX  (heavy fluid fills X+Y region)
-    // Actually the correct interface formula:
-    // At min interface (bottom): HP sees mostly light fluid
-    // At max interface (top): HP sees heavy fluid up to interface
-    let lrv=(Amm+Xmm)*GMIN + Ymm*GMIN;
-    let urv=(Amm)*GMIN + Xmm*GMAX + Ymm*GMAX;
+    // Interfaz abajo (LRV): A+X = ligero, Y = pesado
+    // Interfaz arriba (URV): A = ligero, X+Y = pesado
+    let lrv=(Amm+Xmm)*GMIN + Ymm*GMAX;
+    let urv=Amm*GMIN + (Xmm+Ymm)*GMAX;
     showResults(lrv,urv,pu,u,X+A,Y);
     drawDiagram('interface1');
 }
@@ -223,12 +211,10 @@ function calcInterface2(){
     let u=document.getElementById('if2_unit').value;
     let pu=document.getElementById('if2_punit').value;
     let Amm=toMM(A,u),Xmm=toMM(X,u),Ymm=toMM(Y,u);
-    // Closed tank with wet leg for interface
-    // From Excel: (AC+AG)*AK + (AO*AS) - (AW+BA+BE)*BI
-    // = (A+X)*GMIN + Y*GMIN - (A+X+Y)*GS  (at min interface)
+    // Igual que interfaz abierta pero restando la pata húmeda
     let total=Amm+Xmm+Ymm;
-    let lrv=(Amm+Xmm)*GMIN + Ymm*GMIN - total*GS;
-    let urv=Amm*GMIN + Xmm*GMAX + Ymm*GMAX - total*GS;
+    let lrv=(Amm+Xmm)*GMIN + Ymm*GMAX - total*GS;
+    let urv=Amm*GMIN + (Xmm+Ymm)*GMAX - total*GS;
     showResults(lrv,urv,pu,u,X+A,Y);
     drawDiagram('interface2');
 }
